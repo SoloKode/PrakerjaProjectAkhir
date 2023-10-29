@@ -1,48 +1,83 @@
 package controllers
 
 import (
+	"net/http"
 	"projectakhir/models"
 	"projectakhir/repositories"
 
 	"github.com/labstack/echo/v4"
 )
 
-func AddUsersController(c echo.Context) error {
-	var user models.Buku
-	c.Bind(&user)
+// AddBookController adalah handler untuk menambahkan buku ke database.
+func AddBookController(c echo.Context) error {
+	var book models.Book
+	c.Bind(&book)
 
-	err := repositories.AddUser(&user)
+	// Memanggil repositori untuk menambahkan buku ke database
+	err := repositories.AddBook(&book)
 
+	// Mengatasi kesalahan jika terjadi kesalahan saat menambahkan buku
 	if err != nil {
-		return c.JSON(500, models.BaseResponse{
+		return c.JSON(http.StatusInternalServerError, models.BaseResponse{
 			Status:  false,
 			Message: "Failed create in database",
 			Data:    nil,
 		})
 	}
 
-	return c.JSON(200, models.BaseResponse{
+	// Mengembalikan respons berhasil dengan status 200 jika buku berhasil ditambahkan
+	return c.JSON(http.StatusOK, models.BaseResponse{
 		Status:  true,
 		Message: "Successfully created",
-		Data:    user,
+		Data:    book,
 	})
 }
 
-func GetUsersController(c echo.Context) error {
-	var users []models.Buku
+// GetBookController adalah handler untuk mendapatkan daftar buku dari database.
+func GetBookController(c echo.Context) error {
+	var book []models.Book
 
-	err := repositories.GetUser(&users)
+	// Memanggil repositori untuk mendapatkan daftar buku dari database
+	err := repositories.GetBooks(&book)
 
+	// Mengatasi kesalahan jika terjadi kesalahan saat mengambil data buku
 	if err != nil {
-		return c.JSON(500, models.BaseResponse{
+		return c.JSON(http.StatusInternalServerError, models.BaseResponse{
 			Status:  false,
 			Message: "Failed get data from database",
 			Data:    nil,
 		})
 	}
-	return c.JSON(200, models.BaseResponse{
+
+	// Mengembalikan daftar buku dengan status 200 jika berhasil
+	return c.JSON(http.StatusOK, models.BaseResponse{
 		Status:  true,
 		Message: "Successfully get data",
-		Data:    users,
+		Data:    book,
+	})
+}
+
+// GetDetailBookController adalah handler untuk mendapatkan detail buku berdasarkan ID dari database.
+func GetDetailBookController(c echo.Context) error {
+	var book []models.Book
+	id := c.Param("id")
+
+	// Memanggil metode untuk mendapatkan detail buku dari repositori atau database
+	err := repositories.GetDetailBook(&book, id)
+
+	// Mengatasi kesalahan jika terjadi kesalahan dalam mengambil data buku
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, models.BaseResponse{
+			Status:  false,
+			Message: "Gagal mengambil data buku dari database",
+			Data:    nil,
+		})
+	}
+
+	// Mengembalikan data buku dengan status 200 jika berhasil
+	return c.JSON(http.StatusOK, models.BaseResponse{
+		Status:  true,
+		Message: "Berhasil mendapatkan detail buku",
+		Data:    book,
 	})
 }
